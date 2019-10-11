@@ -69,7 +69,8 @@ Communications Failed
 
 def getKey():
     """
-    ******** FAULKNERFIX
+    FAULKNERFIX
+
     if os.name == 'nt':
       return msvcrt.getch()
 
@@ -128,6 +129,18 @@ def checkAngularLimitVelocity(vel):
 
     return vel
 
+FAULKNERFIX
+def avoidObstacles(twist, scan_ranges):
+  # for now, use identity operation
+  return twist
+
+# FAULKNERFIX
+def getObstacleTwist(initial_twist):
+  scan_ranges = rospy.wait_for_message('scan', LaserScan)
+  new_twist = avoidObstacles(initial_twist, scan_ranges)
+  return new_twist
+
+
 if __name__=="__main__":
     if os.name != 'nt':
         settings = termios.tcgetattr(sys.stdin)
@@ -146,16 +159,11 @@ if __name__=="__main__":
     try:
         print msg
         while(1):
-            # FAULKNERFIX
-            # scan for obstacles
-            scan_ranges = rospy.wait_for_message('scan', LaserScan)
-            print(scan_ranges)
-
             key = getKey()
             if key == 'w' :
                 target_linear_vel = checkLinearLimitVelocity(target_linear_vel + LIN_VEL_STEP_SIZE)
                 status = status + 1
-                # FAULKNER FIX
+                # FAULKNERFIX
                 # print vels(target_linear_vel,target_angular_vel)
             elif key == 'x' :
                 target_linear_vel = checkLinearLimitVelocity(target_linear_vel - LIN_VEL_STEP_SIZE)
@@ -190,6 +198,10 @@ if __name__=="__main__":
 
             control_angular_vel = makeSimpleProfile(control_angular_vel, target_angular_vel, (ANG_VEL_STEP_SIZE/2.0))
             twist.angular.x = 0.0; twist.angular.y = 0.0; twist.angular.z = control_angular_vel
+
+            # FAULKNERFIX
+            # Change twist based on obstacles
+            twist = getObstacleTwist(twist) 
 
             pub.publish(twist)
 
