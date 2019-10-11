@@ -2,7 +2,7 @@
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
   <param name="model" value="$(arg model)"/>
   
-  <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_house.launch"></include>
+  <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_empty_world.launch"></include>
   <include file="$(find turtlebot3_fake)/launch/turtlebot3_fake.launch"> </include> 
 
   <node pkg="faulkner" type="faulkner_sim_forward" name="faulkner_sim_forward"  output="screen">
