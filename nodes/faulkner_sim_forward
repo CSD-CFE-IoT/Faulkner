@@ -129,7 +129,7 @@ def checkAngularLimitVelocity(vel):
 
     return vel
 
-FAULKNERFIX
+# FAULKNERFIX
 def avoidObstacles(twist, scan_ranges):
   # for now, use identity operation
   return twist
@@ -137,6 +137,7 @@ def avoidObstacles(twist, scan_ranges):
 # FAULKNERFIX
 def getObstacleTwist(initial_twist):
   scan_ranges = rospy.wait_for_message('scan', LaserScan)
+  print(scan_ranges)
   new_twist = avoidObstacles(initial_twist, scan_ranges)
   return new_twist
 
