@@ -9,8 +9,9 @@ from geometry_msgs.msg import Twist
 pub = None
 
 BURGER_MAX_LIN_VEL = 0.22
-ANG_VEL_STEP_SIZE = 0.1
+ANG_VEL_STEP_SIZE = 2.5
 SECTOR_RADS = 0.628319 # 36 degrees
+AVOID_DISTANCE = 2.5
 
 def clbk_laser(msg):
     sector_index_range = math.trunc(SECTOR_RADS/msg.angle_increment)
@@ -31,35 +32,35 @@ def take_action(regions):
     
     state_description = ''
     
-    if regions['front'] > 1 and regions['fleft'] > 1 and regions['fright'] > 1:
+    if regions['front'] > AVOID_DISTANCE and regions['fleft'] > AVOID_DISTANCE and regions['fright'] > AVOID_DISTANCE:
         state_description = 'case 1 - nothing'
         linear_x = BURGER_MAX_LIN_VEL
         angular_z = 0
-    elif regions['front'] < 1 and regions['fleft'] > 1 and regions['fright'] > 1:
+    elif regions['front'] < AVOID_DISTANCE and regions['fleft'] > AVOID_DISTANCE and regions['fright'] > AVOID_DISTANCE:
         state_description = 'case 2 - front'
         linear_x = 0
-        angular_z = BURGER_MAX_LIN_VEL/2.0
-    elif regions['front'] > 1 and regions['fleft'] > 1 and regions['fright'] < 1:
+        angular_z = ANG_VEL_STEP_SIZE
+    elif regions['front'] > AVOID_DISTANCE and regions['fleft'] > AVOID_DISTANCE and regions['fright'] < AVOID_DISTANCE:
         state_description = 'case 3 - fright'
         linear_x = 0
-        angular_z = BURGER_MAX_LIN_VEL/2.0
-    elif regions['front'] > 1 and regions['fleft'] < 1 and regions['fright'] > 1:
+        angular_z = ANG_VEL_STEP_SIZE
+    elif regions['front'] > AVOID_DISTANCE and regions['fleft'] < AVOID_DISTANCE and regions['fright'] > AVOID_DISTANCE:
         state_description = 'case 4 - fleft'
         linear_x = 0
-        angular_z = -BURGER_MAX_LIN_VEL/2.0
-    elif regions['front'] < 1 and regions['fleft'] > 1 and regions['fright'] < 1:
+        angular_z = -ANG_VEL_STEP_SIZE
+    elif regions['front'] < AVOID_DISTANCE and regions['fleft'] > AVOID_DISTANCE and regions['fright'] < AVOID_DISTANCE:
         state_description = 'case 5 - front and fright'
         linear_x = 0
-        angular_z = BURGER_MAX_LIN_VEL/2.0
-    elif regions['front'] < 1 and regions['fleft'] < 1 and regions['fright'] > 1:
+        angular_z = ANG_VEL_STEP_SIZE
+    elif regions['front'] < AVOID_DISTANCE and regions['fleft'] < AVOID_DISTANCE and regions['fright'] > AVOID_DISTANCE:
         state_description = 'case 6 - front and fleft'
         linear_x = 0
-        angular_z = -BURGER_MAX_LIN_VEL/2.0
-    elif regions['front'] < 1 and regions['fleft'] < 1 and regions['fright'] < 1:
+        angular_z = -ANG_VEL_STEP_SIZE
+    elif regions['front'] < AVOID_DISTANCE and regions['fleft'] < AVOID_DISTANCE and regions['fright'] < AVOID_DISTANCE:
         state_description = 'case 7 - front and fleft and fright'
         linear_x = 0
-        angular_z = BURGER_MAX_LIN_VEL/2.0
-    elif regions['front'] > 1 and regions['fleft'] < 1 and regions['fright'] < 1:
+        angular_z = ANG_VEL_STEP_SIZE
+    elif regions['front'] > AVOID_DISTANCE and regions['fleft'] < AVOID_DISTANCE and regions['fright'] < AVOID_DISTANCE:
         state_description = 'case 8 - fleft and fright'
         linear_x = BURGER_MAX_LIN_VEL/2.0
         angular_z = 0
