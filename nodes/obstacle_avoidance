@@ -1,20 +1,21 @@
 #! /usr/bin/env python
 
 import rospy
-import math
+#import math
 
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
 
 pub = None
 
-BURGER_MAX_LIN_VEL = 0.22
-ANG_VEL_STEP_SIZE = 2.5
+#BURGER_MAX_LIN_VEL = 0.22 (this is the max that burger supports)
+BURGER_MAX_LIN_VEL = 0.1
+ANG_VEL_MAGNITUDE = 2.5
 SECTOR_RADS = 0.628319 # 36 degrees
 AVOID_DISTANCE = 2.5
 
 def clbk_laser(msg):
-    sector_index_range = math.trunc(SECTOR_RADS/msg.angle_increment)
+    sector_index_range = int(round(SECTOR_RADS/msg.angle_increment))
     regions = {
         'right':  min(min(msg.ranges[0:sector_index_range]), 10),
         'fright': min(min(msg.ranges[sector_index_range:2*sector_index_range]), 10),
@@ -22,7 +23,7 @@ def clbk_laser(msg):
         'fleft':  min(min(msg.ranges[3*sector_index_range:4*sector_index_range]), 10),
         'left':   min(min(msg.ranges[4*sector_index_range:5*sector_index_range]), 10),
     }
-    
+
     take_action(regions)
     
 def take_action(regions):
@@ -39,27 +40,27 @@ def take_action(regions):
     elif regions['front'] < AVOID_DISTANCE and regions['fleft'] > AVOID_DISTANCE and regions['fright'] > AVOID_DISTANCE:
         state_description = 'case 2 - front'
         linear_x = 0
-        angular_z = ANG_VEL_STEP_SIZE
+        angular_z = ANG_VEL_MAGNITUDE
     elif regions['front'] > AVOID_DISTANCE and regions['fleft'] > AVOID_DISTANCE and regions['fright'] < AVOID_DISTANCE:
         state_description = 'case 3 - fright'
         linear_x = 0
-        angular_z = ANG_VEL_STEP_SIZE
+        angular_z = ANG_VEL_MAGNITUDE
     elif regions['front'] > AVOID_DISTANCE and regions['fleft'] < AVOID_DISTANCE and regions['fright'] > AVOID_DISTANCE:
         state_description = 'case 4 - fleft'
         linear_x = 0
-        angular_z = -ANG_VEL_STEP_SIZE
+        angular_z = -ANG_VEL_MAGNITUDE
     elif regions['front'] < AVOID_DISTANCE and regions['fleft'] > AVOID_DISTANCE and regions['fright'] < AVOID_DISTANCE:
         state_description = 'case 5 - front and fright'
         linear_x = 0
-        angular_z = ANG_VEL_STEP_SIZE
+        angular_z = ANG_VEL_MAGNITUDE
     elif regions['front'] < AVOID_DISTANCE and regions['fleft'] < AVOID_DISTANCE and regions['fright'] > AVOID_DISTANCE:
         state_description = 'case 6 - front and fleft'
         linear_x = 0
-        angular_z = -ANG_VEL_STEP_SIZE
+        angular_z = -ANG_VEL_MAGNITUDE
     elif regions['front'] < AVOID_DISTANCE and regions['fleft'] < AVOID_DISTANCE and regions['fright'] < AVOID_DISTANCE:
         state_description = 'case 7 - front and fleft and fright'
         linear_x = 0
-        angular_z = ANG_VEL_STEP_SIZE
+        angular_z = ANG_VEL_MAGNITUDE
     elif regions['front'] > AVOID_DISTANCE and regions['fleft'] < AVOID_DISTANCE and regions['fright'] < AVOID_DISTANCE:
         state_description = 'case 8 - fleft and fright'
         linear_x = BURGER_MAX_LIN_VEL/2.0
@@ -68,7 +69,7 @@ def take_action(regions):
         state_description = 'unknown case'
         rospy.loginfo(regions)
 
-    rospy.loginfo(state_description)
+    rospy.loginfo("%s %s %f/%f", state_description, regions, linear_x, angular_z)
     msg.linear.x = linear_x
     msg.angular.z = angular_z
     pub.publish(msg)
