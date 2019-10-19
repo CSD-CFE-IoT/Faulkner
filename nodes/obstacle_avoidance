@@ -15,13 +15,13 @@ SECTOR_RADS = 0.628319 # 36 degrees
 AVOID_DISTANCE = 2.5
 
 def clbk_laser(msg):
-    sector_index_range = int(round(SECTOR_RADS/msg.angle_increment))
+    s = int(round(SECTOR_RADS/msg.angle_increment))
     regions = {
-        'right':  min(min(msg.ranges[0:sector_index_range]), 10),
-        'fright': min(min(msg.ranges[sector_index_range:2*sector_index_range]), 10),
-        'front':  min(min(msg.ranges[2*sector_index_range:3*sector_index_range]), 10),
-        'fleft':  min(min(msg.ranges[3*sector_index_range:4*sector_index_range]), 10),
-        'left':   min(min(msg.ranges[4*sector_index_range:5*sector_index_range]), 10),
+        'right':  min(min(msg.ranges[(15*s)/2:(17*s)/2]), 10),
+        'fright':   min(min(msg.ranges[(17*s)/2:(19*s)/2]), 10),
+        'front':  min(min(msg.ranges[0:s/2]+msg.ranges[(19*s)/2:]), 10),
+        'fleft': min(min(msg.ranges[s/2:(3*s)/2]), 10),
+        'left':  min(min(msg.ranges[(3*s)/2:(5*s)/2]), 10),
     }
 
     take_action(regions)
