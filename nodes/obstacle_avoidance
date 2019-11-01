@@ -10,9 +10,9 @@ pub = None
 
 #BURGER_MAX_LIN_VEL = 0.22 (this is the max that burger supports)
 BURGER_MAX_LIN_VEL = 0.1
-ANG_VEL_MAGNITUDE = 2.5
+ANG_VEL_MAGNITUDE = 0.3
 SECTOR_RADS = 0.628319 # 36 degrees
-AVOID_DISTANCE = 2.5
+AVOID_DISTANCE = 0.5
 
 def clbk_laser(msg):
     s = int(round(SECTOR_RADS/msg.angle_increment))
