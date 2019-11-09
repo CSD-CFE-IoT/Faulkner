@@ -6,6 +6,30 @@
   <arg name="y_pos" default="0.0"/>
   <arg name="z_pos" default="0.0"/>
 
+  <arg name="des_x" default="4.0"/>
+  <arg name="des_y" default="0.0"/>
+  <arg name="max_lin_vel" default="0.1"/>
+  <arg name="fix_yaw_ang_vel" default="0.2"/>
+  <arg name="course_correct_ang_vel" default="0.05"/>
+  <arg name="yaw_precision" default="0.174533"/> <!-- 10 degrees -->
+  <arg name="course_correct_yaw_precision" default="0.0174533"/> <!-- 1 degrees -->
+  <arg name="dist_precision" default="0.1"/>
+  <arg name="scan_sector_size" default="0.628319"/> <!-- 36 degrees -->
+  <arg name="avoidance_ang_vel_magnitude" default="0.3"/>
+  <arg name="avoid_distance" default="0.5"/>
+
+  <param name="des_pos_x" value="$(arg des_x)" />
+  <param name="des_pos_y" value="$(arg des_y)" />
+  <param name="max_lin_vel" value="$(arg max_lin_vel)" />
+  <param name="fix_yaw_ang_vel" value="$(arg fix_yaw_ang_vel)" />
+  <param name="course_correct_ang_vel" value="$(arg course_correct_ang_vel)" />
+  <param name="yaw_precision" value="$(arg yaw_precision)" />
+  <param name="course_correct_yaw_precision" value="$(arg course_correct_yaw_precision)" />
+  <param name="dist_precision" value="$(arg dist_precision)" />
+  <param name="scan_sector_size" value="$(arg scan_sector_size)" />
+  <param name="avoidance_ang_vel_magnitude" value="$(arg avoidance_ang_vel_magnitude)" />
+  <param name="avoid_distance" value="$(arg avoid_distance)" />
+
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find faulkner)/worlds/faulknerBox"/>
     <arg name="paused" value="false"/>
@@ -21,6 +45,5 @@
 
   <include file="$(find turtlebot3_fake)/launch/turtlebot3_fake.launch"/> 
 
-  <node pkg="faulkner" type="obstacle_avoidance" name="faulkner_sim_forward"  output="screen"/>
-  
+  <node pkg="faulkner" type="bug_master" name="bug_master"  output="screen" />
 </launch>
