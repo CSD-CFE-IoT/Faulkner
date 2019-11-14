@@ -1,0 +1,68 @@
+#! /usr/bin/env python
+from geometry_msgs.msg import Point
+import math
+
+state_desc_ = ['Obstacle avoidance', 'Fix yaw', 'Go to point', 'Done']
+
+class global_state_variables:
+    def __init__(self, goal_pos):
+        # pose and regions
+        self.position = Point()
+        self.yaw = 0.0
+        self.regions = None
+
+        #goal
+        self.goal_pos = goal_pos
+
+        # derived state
+        self.desired_yaw = 0.0
+        self.err_yaw = 0.0
+        self.err_pos = 0.0
+
+        # action state
+        self.action_state = 0
+
+class state_manager:
+    def __init__(self, state_vars, params, avoidance):
+        self.state_vars = state_vars
+        self.params = params
+        self.avoidance = avoidance
+
+    def ready(self):
+        return self.state_vars.regions != None
+
+    def move_to_next_state(self):
+        self.state_vars.desired_yaw = math.atan2(self.state_vars.goal_pos.y - self.state_vars.position.y, self.state_vars.goal_pos.x - self.state_vars.position.x)
+        self.state_vars.err_yaw = self.normalize_angle(self.state_vars.desired_yaw - self.state_vars.yaw)
+        self.state_vars.err_pos = math.sqrt(pow(self.state_vars.goal_pos.y - self.state_vars.position.y, 2) + pow(self.state_vars.goal_pos.x - self.state_vars.position.x, 2))
+
+        # if near goal
+        if self.state_vars.err_pos <= self.params.dist_precision:
+            self.state_vars.action_state = 3 # done
+            return
+        
+        # if path is obstructed
+        if self.avoidance.is_obstructed():
+            self.state_vars.action_state = 0 # avoid obstacle
+            return
+        else:
+            self.state_vars.action_state = 1 # fix yaw
+
+        # if currently fixing yaw, and yaw error below tolerance threshold,
+        if self.state_vars.action_state == 1 and math.fabs(self.state_vars.err_yaw) <= self.params.yaw_precision:
+            print 'Yaw error: [%s]' % self.state_vars.err_yaw
+            self.state_vars.action_state = 2 # go straight ahead
+            return
+        
+        # if going straight ahead, and yaw error above tolerance threshold,
+        if self.state_vars.action_state == 2 and math.fabs(self.state_vars.err_yaw) > self.params.yaw_precision:
+            self.state_vars.action_state = 1 # fix yaw
+            return
+    
+    def normalize_angle(self, angle):
+        if(math.fabs(angle) > math.pi):
+            angle = angle - (2 * math.pi * angle) / (math.fabs(angle))
+        return angle
+
+    def action_state(self):
+        return self.state_vars.action_state
