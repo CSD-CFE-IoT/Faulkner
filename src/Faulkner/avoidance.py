@@ -9,12 +9,12 @@ class avoidance:
         self.state_vars = state_vars
         self.params = params
     
-    def is_obstructed(self):
-        return self.front() or self.fleft() or self.frontAndFright() or self.frontAndFleft() or self.frontAndFleftAndFright()
+    #def is_obstructed(self):
+    #    return self.front() or self.fleft() or self.frontAndFright() or self.frontAndFleft() or self.frontAndFleftAndFright()
         #return self.front() or self.frontAndFright() or self.frontAndFleft() or self.frontAndFleftAndFright()
 
-    def nothing(self):
-        return self.state_vars.regions['front'] > self.params.avoid_distance and self.state_vars.regions['fleft'] > self.params.avoid_distance and self.state_vars.regions['fright'] > self.params.avoid_distance
+    def is_obstructed(self):
+        return self.state_vars.regions['front'] <= self.params.avoid_distance or self.state_vars.regions['fleft'] <= self.params.avoid_distance or self.state_vars.regions['fright'] <= self.params.avoid_distance
     
     def front(self):
         return self.state_vars.regions['front'] <= self.params.avoid_distance and self.state_vars.regions['fleft'] > self.params.avoid_distance and self.state_vars.regions['fright'] > self.params.avoid_distance
