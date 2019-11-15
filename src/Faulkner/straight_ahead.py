@@ -2,6 +2,8 @@
 
 from geometry_msgs.msg import Twist
 import math
+import rospy
+import loghelper
 
 class straight_ahead:
     
@@ -17,4 +19,5 @@ class straight_ahead:
             if math.fabs(self.state_vars.err_yaw) > self.params.course_correct_yaw_precision:
                 tw.angular.z = self.params.course_correct_ang_vel if self.state_vars.err_yaw > 0 else -self.params.course_correct_ang_vel
 
+            rospy.loginfo('%s Applied ang vel %f', loghelper.logheader('Straight ahead', self.state_vars), tw.angular.z)
             return tw

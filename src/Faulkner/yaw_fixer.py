@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 from geometry_msgs.msg import Twist
 import math
+import rospy
+import loghelper
 
 class yaw_fixer:
 
@@ -9,9 +11,8 @@ class yaw_fixer:
         self.params = params
 
     def fix(self):
-        # print('Fix_yaw: [%f, %f], yaw: %f, desired_yaw: %f, err_yaw: %f' % (position_.x, position_.y, yaw_, desired_yaw, err_yaw))
         tw = Twist()
         if math.fabs(self.state_vars.err_yaw) > self.params.yaw_precision:
             tw.angular.z = self.params.fix_yaw_ang_vel if self.state_vars.err_yaw > 0 else -self.params.fix_yaw_ang_vel
-
+        rospy.loginfo('%s Applied ang vel %f', loghelper.logheader('Fix yaw', self.state_vars), tw.angular.z)
         return tw
