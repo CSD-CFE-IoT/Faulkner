@@ -2,6 +2,7 @@
 
 from geometry_msgs.msg import Twist
 import rospy
+import loghelper
 
 class avoidance:
     def __init__(self, state_vars, params):
@@ -37,9 +38,6 @@ class avoidance:
         return self.state_vars.regions['front'] > self.params.avoid_distance and self.state_vars.regions['fleft'] <= self.params.avoid_distance and self.state_vars.regions['fright'] <= self.params.avoid_distance
 
     def avoid(self):
-        # Select action based on self.state_vars.regions
-        print("REGIONS:")
-        print(self.state_vars.regions)
         tw = Twist()
         state_description = "unobstructed"
 
@@ -69,5 +67,11 @@ class avoidance:
             tw.linear.x = 0
             tw.angular.z = -self.params.avoidance_ang_vel_magnitude
 
-        print(state_description)
+        rospy.loginfo(
+            '%s Case %s, applied: %f/%f',
+            loghelper.logheader('Avoidance', self.state_vars),
+            state_description,
+            tw.linear.x,
+            tw.angular.z
+        )
         return tw
