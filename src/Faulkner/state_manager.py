@@ -3,7 +3,7 @@ from geometry_msgs.msg import Point
 import math
 import rospy
 
-state_desc_ = ['Obstacle avoidance', 'Fix yaw', 'Go to point', 'Done']
+state_desc_ = ['Obstacle avoidance', 'Fix yaw', 'Straight ahead', 'Done']
 
 class global_state_variables:
     def __init__(self, goal_pos):
@@ -21,7 +21,7 @@ class global_state_variables:
         self.err_pos = 0.0
 
         # action state
-        self.action_state = 0
+        self.action_state = 1 # start by fixing yaw
 
 class state_manager:
     def __init__(self, state_vars, params, avoidance):
@@ -41,23 +41,17 @@ class state_manager:
         if self.state_vars.err_pos <= self.params.dist_precision:
             self.set_action_state(3) # done
             return
-        
+            
         # if path is obstructed
         if self.avoidance.is_obstructed():
             self.set_action_state(0) # avoid obstacle
             return
+
+        # if yaw error below tolerance threshold, straight ahead, else fix yaw
+        if math.fabs(self.state_vars.err_yaw) <= self.params.yaw_precision:
+            self.set_action_state(2) # go straight ahead
         else:
             self.set_action_state(1) # fix yaw
-
-        # if currently fixing yaw, and yaw error below tolerance threshold,
-        if self.state_vars.action_state == 1 and math.fabs(self.state_vars.err_yaw) <= self.params.yaw_precision:
-            self.set_action_state(2) # go straight ahead
-            return
-        
-        # if going straight ahead, and yaw error above tolerance threshold,
-        if self.state_vars.action_state == 2 and math.fabs(self.state_vars.err_yaw) > self.params.yaw_precision:
-            self.set_action_state(1) # fix yaw
-            return
     
     def normalize_angle(self, angle):
         if(math.fabs(angle) > math.pi):
@@ -65,12 +59,13 @@ class state_manager:
         return angle
 
     def set_action_state(self, new_action_state):
-        rospy.loginfo(
-            'Action state transition from %s to %s',
-            state_desc_[self.state_vars.action_state],
-            state_desc_[new_action_state]
-        )
-        self.state_vars.action_state = new_action_state
+        if new_action_state != self.state_vars.action_state:
+            rospy.loginfo(
+                'Action state transition from %s to %s',
+                state_desc_[self.state_vars.action_state],
+                state_desc_[new_action_state]
+            )
+            self.state_vars.action_state = new_action_state
 
     def action_state(self):
         return self.state_vars.action_state
