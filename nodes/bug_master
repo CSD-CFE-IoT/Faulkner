@@ -5,6 +5,9 @@ import rospy
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist, Point
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import Joy
+from std_msgs.msg import String
+
 from tf import transformations
 from Faulkner import state_manager
 from Faulkner import parameters
@@ -46,6 +49,27 @@ def clbk_laser(msg):
         'left':  min(min(msg.ranges[(3*s)/2:(5*s)/2]), 10),
     }
 
+def clbk_joy(msg):
+    print(msg.header.seq)
+    #output structure header, axes, buttons
+    
+    # TODO Hardcoded for now
+    step = 1000  # unit
+
+    mx = msg.axes[3] # 4th array item
+    my = msg.axes[4] # 5th array item
+    print("Joy x:"+ str(mx), " y:" + str(my))
+
+    if(my >= 0.8):
+        #Move 
+        print("Requested Move...")
+        state_variables_.goal_pos.x = step # state_variables_.position.x + step
+
+    if(my <= -0.8):
+        #stop
+        print("Requested Stop!")
+        state_variables_.goal_pos = state_variables_.position
+
 def createParametersFromLaunchFile():
     return parameters(
         rospy.get_param('yaw_precision'),
@@ -79,7 +103,13 @@ def main():
 
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
     sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
+
+     # Lidar
     sub = rospy.Subscriber('scan', LaserScan, clbk_laser)
+    
+    # Joystick
+    subJoy = rospy.Subscriber('joy', Joy, clbk_joy)
+
 
     rate = rospy.Rate(20)
 
