@@ -13,7 +13,8 @@ class global_state_variables:
         self.regions = None
 
         #goal
-        self.goal_pos = goal_pos
+        #self.goal_pos = goal_pos
+        self.goal_pos = self.position
 
         # derived state
         self.desired_yaw = 0.0
@@ -33,9 +34,13 @@ class state_manager:
         return self.state_vars.regions != None
 
     def move_to_next_state(self):
-        self.state_vars.desired_yaw = math.atan2(self.state_vars.goal_pos.y - self.state_vars.position.y, self.state_vars.goal_pos.x - self.state_vars.position.x)
+
+        goal = self.state_vars.goal_pos
+        pos = self.state_vars.position
+
+        self.state_vars.desired_yaw = math.atan2(goal.y - pos.y, goal.x - pos.x)
         self.state_vars.err_yaw = self.normalize_angle(self.state_vars.desired_yaw - self.state_vars.yaw)
-        self.state_vars.err_pos = math.sqrt(pow(self.state_vars.goal_pos.y - self.state_vars.position.y, 2) + pow(self.state_vars.goal_pos.x - self.state_vars.position.x, 2))
+        self.state_vars.err_pos = math.sqrt(pow(goal.y - pos.y, 2) + pow(goal.x - pos.x, 2))
 
         # if near goal
         if self.state_vars.err_pos <= self.params.dist_precision:

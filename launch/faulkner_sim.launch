@@ -17,6 +17,7 @@
   <arg name="scan_sector_size" default="0.628319"/> <!-- 36 degrees -->
   <arg name="avoidance_ang_vel_magnitude" default="0.3"/>
   <arg name="avoid_distance" default="0.5"/>
+  <arg name="dev" default="/dev/input/js0" />
 
   <param name="des_pos_x" value="$(arg des_x)" />
   <param name="des_pos_y" value="$(arg des_y)" />
@@ -44,6 +45,12 @@
   <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
 
   <include file="$(find turtlebot3_fake)/launch/turtlebot3_fake.launch"/> 
+
+  <!-- Joy Node -->
+  <node respawn="true" pkg="joy" type="joy_node" name="turtle_joy">
+    <param name="dev" type="string" value="/dev/input/js0" />
+    <param name="deadzone" value="0.12" />
+  </node>
 
   <node pkg="faulkner" type="bug_master" name="bug_master"  output="screen" />
 </launch>
