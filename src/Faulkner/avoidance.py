@@ -1,75 +1,77 @@
 #! /usr/bin/env python
 
+from geometry_msgs.msg import Twist
 import rospy
-
-from sensor_msgs.msg import LaserScan
-
-SECTOR_RADS = 0.628319 # 36 degrees
-BURGER_MAX_LIN_VEL = 0.1
-ANG_VEL_MAGNITUDE = 0.3
-AVOID_DISTANCE = 0.5
+import loghelper
 
 class avoidance:
-    def __init__(self):
-        self.linear_x = 0
-        self.angular_z = 0
-        self.state_description = ''
-        self.regions = {}
+    def __init__(self, state_vars, params):
+        self.state_vars = state_vars
+        self.params = params
     
-    def GetRegions(self, msg):
-        s = int(round(SECTOR_RADS/msg.angle_increment))
-        regions = {
-            # FAULKNERFIX: make these hardcoded numbers configurable
-            'right':  min(min(msg.ranges[(15*s)/2:(17*s)/2]), 10),
-            'fright':   min(min(msg.ranges[(17*s)/2:(19*s)/2]), 10),
-            'front':  min(min(msg.ranges[0:s/2]+msg.ranges[(19*s)/2:]), 10),
-            'fleft': min(min(msg.ranges[s/2:(3*s)/2]), 10),
-            'left':  min(min(msg.ranges[(3*s)/2:(5*s)/2]), 10),
-        }
+    #def is_obstructed(self):
+    #    return self.front() or self.fleft() or self.frontAndFright() or self.frontAndFleft() or self.frontAndFleftAndFright()
+        #return self.front() or self.frontAndFright() or self.frontAndFleft() or self.frontAndFleftAndFright()
 
-        return regions
-        
-    def UpdateAction(self, msg):
-        self.linear_x = 0
-        self.angular_z = 0
-        self.state_description = ''
-        self.regions = {}
+    def is_obstructed(self):
+        return self.state_vars.regions['front'] <= self.params.avoid_distance or self.state_vars.regions['fleft'] <= self.params.avoid_distance or self.state_vars.regions['fright'] <= self.params.avoid_distance
+    
+    def front(self):
+        return self.state_vars.regions['front'] <= self.params.avoid_distance and self.state_vars.regions['fleft'] > self.params.avoid_distance and self.state_vars.regions['fright'] > self.params.avoid_distance
 
-        # Update the regions member
-        self.regions = self.GetRegions(msg)
+    def fright(self):
+        return self.state_vars.regions['front'] > self.params.avoid_distance and self.state_vars.regions['fleft'] > self.params.avoid_distance and self.state_vars.regions['fright'] <= self.params.avoid_distance
 
-        # Select action based on regions
-        if self.regions['front'] > AVOID_DISTANCE and self.regions['fleft'] > AVOID_DISTANCE and self.regions['fright'] > AVOID_DISTANCE:
-            self.state_description = 'case 1 - nothing'
-            self.linear_x = BURGER_MAX_LIN_VEL
-            self.angular_z = 0
-        elif self.regions['front'] < AVOID_DISTANCE and self.regions['fleft'] > AVOID_DISTANCE and self.regions['fright'] > AVOID_DISTANCE:
-            self.state_description = 'case 2 - front'
-            self.linear_x = 0
-            self.angular_z = ANG_VEL_MAGNITUDE
-        elif self.regions['front'] > AVOID_DISTANCE and self.regions['fleft'] > AVOID_DISTANCE and self.regions['fright'] < AVOID_DISTANCE:
-            self.state_description = 'case 3 - fright'
-            self.linear_x = 0
-            self.angular_z = ANG_VEL_MAGNITUDE
-        elif self.regions['front'] > AVOID_DISTANCE and self.regions['fleft'] < AVOID_DISTANCE and self.regions['fright'] > AVOID_DISTANCE:
-            self.state_description = 'case 4 - fleft'
-            self.linear_x = 0
-            self.angular_z = -ANG_VEL_MAGNITUDE
-        elif self.regions['front'] < AVOID_DISTANCE and self.regions['fleft'] > AVOID_DISTANCE and self.regions['fright'] < AVOID_DISTANCE:
-            self.state_description = 'case 5 - front and fright'
-            self.linear_x = 0
-            self.angular_z = ANG_VEL_MAGNITUDE
-        elif self.regions['front'] < AVOID_DISTANCE and self.regions['fleft'] < AVOID_DISTANCE and self.regions['fright'] > AVOID_DISTANCE:
-            self.state_description = 'case 6 - front and fleft'
-            self.linear_x = 0
-            self.angular_z = -ANG_VEL_MAGNITUDE
-        elif self.regions['front'] < AVOID_DISTANCE and self.regions['fleft'] < AVOID_DISTANCE and self.regions['fright'] < AVOID_DISTANCE:
-            self.state_description = 'case 7 - front and fleft and fright'
-            self.linear_x = 0
-            self.angular_z = ANG_VEL_MAGNITUDE
-        elif self.regions['front'] > AVOID_DISTANCE and self.regions['fleft'] < AVOID_DISTANCE and self.regions['fright'] < AVOID_DISTANCE:
-            self.state_description = 'case 8 - fleft and fright'
-            self.linear_x = BURGER_MAX_LIN_VEL/2.0
-            self.angular_z = 0
-        else:
-            self.state_description = 'unknown case'
+    def fleft(self):
+        return self.state_vars.regions['front'] > self.params.avoid_distance and self.state_vars.regions['fleft'] <= self.params.avoid_distance and self.state_vars.regions['fright'] > self.params.avoid_distance
+
+    def frontAndFright(self):
+        return self.state_vars.regions['front'] <= self.params.avoid_distance and self.state_vars.regions['fleft'] > self.params.avoid_distance and self.state_vars.regions['fright'] <= self.params.avoid_distance
+
+    def frontAndFleft(self):
+        return self.state_vars.regions['front'] <= self.params.avoid_distance and self.state_vars.regions['fleft'] <= self.params.avoid_distance and self.state_vars.regions['fright'] > self.params.avoid_distance
+
+    def frontAndFleftAndFright(self):
+        return self.state_vars.regions['front'] <= self.params.avoid_distance and self.state_vars.regions['fleft'] <= self.params.avoid_distance and self.state_vars.regions['fright'] <= self.params.avoid_distance
+
+    def fleftAndFright(self):
+        return self.state_vars.regions['front'] > self.params.avoid_distance and self.state_vars.regions['fleft'] <= self.params.avoid_distance and self.state_vars.regions['fright'] <= self.params.avoid_distance
+
+    def avoid(self):
+        tw = Twist()
+        state_description = "unobstructed"
+
+        if self.front():
+            state_description = 'front'
+            # turn right
+            tw.linear.x = 0
+            tw.angular.z = -self.params.avoidance_ang_vel_magnitude
+        elif self.fleft():
+            state_description = 'fleft'
+            # follow wall
+            tw.linear.x = self.params.max_lin_vel
+            tw.angular.z = 0
+        elif self.frontAndFright():
+            state_description = 'front and fright'
+            # turn right
+            tw.linear.x = 0
+            tw.angular.z = -self.params.avoidance_ang_vel_magnitude
+        elif self.frontAndFleft():
+            state_description = 'front and fleft'
+            # turn right
+            tw.linear.x = 0
+            tw.angular.z = -self.params.avoidance_ang_vel_magnitude
+        elif self.frontAndFleftAndFright():
+            state_description = 'front and fleft and fright'
+            # turn right
+            tw.linear.x = 0
+            tw.angular.z = -self.params.avoidance_ang_vel_magnitude
+
+        rospy.loginfo(
+            '%s Case %s, applied: %f/%f',
+            loghelper.logheader('Avoidance', self.state_vars),
+            state_description,
+            tw.linear.x,
+            tw.angular.z
+        )
+        return tw
