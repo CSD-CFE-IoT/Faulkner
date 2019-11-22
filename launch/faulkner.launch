@@ -35,20 +35,9 @@
   <param name="avoidance_ang_vel_magnitude" value="$(arg avoidance_ang_vel_magnitude)" />
   <param name="avoid_distance" value="$(arg avoid_distance)" />
 
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find faulkner)/worlds/faulknerBox"/>
-    <arg name="paused" value="false"/>
-    <arg name="use_sim_time" value="true"/>
-    <arg name="gui" value="true"/>
-    <arg name="headless" value="false"/>
-    <arg name="debug" value="false"/>
-  </include>
-
   <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
 
-  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
-
-  <include file="$(find turtlebot3_fake)/launch/turtlebot3_fake.launch"/> 
+  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch"/> 
 
   <!-- Joy Node -->
   <node respawn="true" pkg="joy" type="joy_node" name="turtle_joy">

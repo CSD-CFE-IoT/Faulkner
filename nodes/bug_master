@@ -52,23 +52,59 @@ def clbk_laser(msg):
 def clbk_joy(msg):
     print(msg.header.seq)
     #output structure header, axes, buttons
-    
-    # TODO Hardcoded for now
-    step = 1000  # unit
+    joystick = rospy.get_param('joyType')
+    print(joystick)
 
-    mx = msg.axes[3] # 4th array item
-    my = msg.axes[4] # 5th array item
-    print("Joy x:"+ str(mx), " y:" + str(my))
+    # TODO Hardcoded for providing next destination point or goal point
+    # step = 1000  # unit
+    # XBox Controller
+    if joystick == 'xbox':
+        mx = msg.axes[3] # 4th array item
+        my = msg.axes[4] # 5th array item
+        print("XBox Joy x:"+ str(mx), " y:" + str(my))
 
-    if(my >= 0.8):
-        #Move 
-        print("Requested Move...")
-        state_variables_.goal_pos.x = step # state_variables_.position.x + step
+        # y-axis navigation
+        if(my >= 0.8):
+            #Move 
+            print("Requested Move...")
+            state_variables_.goal_pos.x = rospy.get_param('step_x')
+        elif(my <= -0.8):
+            #stop
+            print("Requested Stop!")
+            state_variables_.goal_pos = state_variables_.position
+        else:
+            # Do Nothing
+            print("---")
+    elif joystick == 'zerodelay':
+        # Zero delay arcade USB Encoder
+        mx = msg.axes[0]
+        my = msg.axes[1]
 
-    if(my <= -0.8):
-        #stop
-        print("Requested Stop!")
-        state_variables_.goal_pos = state_variables_.position
+        print("Zero Joy x:"+ str(mx), " y:" + str(my))
+
+        #Move forward
+        if my == 1.0:
+            if ( mx == 1.0):  #UpLeft
+                print("UpLeft")
+            elif (mx == -1.0): #UpRight
+                print("UpRight")
+            else:
+                print("Up")
+                state_variables_.goal_pos.x = rospy.get_param('step_x')
+        elif my == -1.0:
+            if ( mx == 1.0):  #DownLeft
+                print("DownLeft")
+            elif (mx == -1.0): #DownRight
+                print("DownRight")
+            else:
+                print("Down")
+                state_variables_.goal_pos = state_variables_.position
+        else:
+            #No Action (0 or -0)
+            print("No Action!")
+    else:
+        # Do Nothing
+        print ("No Compatible Joystick Found!")
 
 def createParametersFromLaunchFile():
     return parameters(
