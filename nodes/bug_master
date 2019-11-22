@@ -1,0 +1,139 @@
+#! /usr/bin/env python
+
+# import ros stuff
+import rospy
+from sensor_msgs.msg import LaserScan
+from geometry_msgs.msg import Twist, Point
+from nav_msgs.msg import Odometry
+from sensor_msgs.msg import Joy
+from std_msgs.msg import String
+
+from tf import transformations
+from Faulkner import state_manager
+from Faulkner import parameters
+from Faulkner import avoidance
+from Faulkner import global_state_variables
+from Faulkner import straight_ahead
+from Faulkner import yaw_fixer
+import math
+
+# global state variables
+state_variables_ = None
+params_ = None
+
+# callbacks
+def clbk_odom(msg):
+    global state_variables_
+    
+    # position
+    state_variables_.position = msg.pose.pose.position
+    
+    # yaw
+    quaternion = (
+        msg.pose.pose.orientation.x,
+        msg.pose.pose.orientation.y,
+        msg.pose.pose.orientation.z,
+        msg.pose.pose.orientation.w)
+    euler = transformations.euler_from_quaternion(quaternion)
+    state_variables_.yaw = euler[2]
+
+def clbk_laser(msg):
+    global state_variables_, params_
+    s = int(round(params_.scan_sector_size/msg.angle_increment))
+    state_variables_.regions = {
+        # FAULKNERFIX: make these hardcoded numbers configurable
+        'right':  min(min(msg.ranges[(15*s)/2:(17*s)/2]), 10),
+        'fright':   min(min(msg.ranges[(17*s)/2:(19*s)/2]), 10),
+        'front':  min(min(msg.ranges[0:s/2]+msg.ranges[(19*s)/2:]), 10),
+        'fleft': min(min(msg.ranges[s/2:(3*s)/2]), 10),
+        'left':  min(min(msg.ranges[(3*s)/2:(5*s)/2]), 10),
+    }
+
+def clbk_joy(msg):
+    print(msg.header.seq)
+    #output structure header, axes, buttons
+    
+    # TODO Hardcoded for now
+    step = 1000  # unit
+
+    mx = msg.axes[3] # 4th array item
+    my = msg.axes[4] # 5th array item
+    print("Joy x:"+ str(mx), " y:" + str(my))
+
+    if(my >= 0.8):
+        #Move 
+        print("Requested Move...")
+        state_variables_.goal_pos.x = step # state_variables_.position.x + step
+
+    if(my <= -0.8):
+        #stop
+        print("Requested Stop!")
+        state_variables_.goal_pos = state_variables_.position
+
+def createParametersFromLaunchFile():
+    return parameters(
+        rospy.get_param('yaw_precision'),
+        rospy.get_param('course_correct_yaw_precision'),
+        rospy.get_param('dist_precision'),
+        rospy.get_param('scan_sector_size'),
+        rospy.get_param('max_lin_vel'),
+        rospy.get_param('fix_yaw_ang_vel'),
+        rospy.get_param('course_correct_ang_vel'),
+        rospy.get_param('avoidance_ang_vel_magnitude'),
+        rospy.get_param('avoid_distance')
+    )
+
+def main():
+    global state_variables_, params_
+    
+    rospy.init_node('go_to_point')
+    
+    goal_position = Point()
+    goal_position.x = rospy.get_param('des_pos_x')
+    goal_position.y = rospy.get_param('des_pos_y')
+    goal_position.z = 0
+
+    state_variables_ = global_state_variables(goal_position)
+    params_ = createParametersFromLaunchFile()
+
+    av = avoidance(state_variables_, params_)
+    yf = yaw_fixer(state_variables_, params_)
+    sa = straight_ahead(state_variables_, params_)
+    sm = state_manager(state_variables_, params_, av)
+
+    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
+
+     # Lidar
+    sub = rospy.Subscriber('scan', LaserScan, clbk_laser)
+    
+    # Joystick
+    subJoy = rospy.Subscriber('joy', Joy, clbk_joy)
+
+
+    rate = rospy.Rate(20)
+
+    while not sm.ready():
+        rate.sleep()
+
+    while not rospy.is_shutdown():
+        sm.move_to_next_state()
+        tw = Twist()
+
+        if sm.action_state() == 0:
+            tw = av.avoid()
+        elif sm.action_state() == 1:
+            tw = yf.fix()
+        elif sm.action_state() == 2:
+            tw = sa.go()
+        elif sm.action_state() == 3:
+            rospy.loginfo('Done')
+        else:
+            rospy.logerr('Unknown action state!')
+
+        pub.publish(tw)
+
+        rate.sleep()
+
+if __name__ == '__main__':
+    main()
