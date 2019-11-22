@@ -15,7 +15,7 @@
     -->
     <node
         name="audio_control"
-        pkg="pocketsphinx"
+        pkg="faulkner"
         type="send_audio.py"
         output="screen"
         >
@@ -27,7 +27,7 @@
     -->
     <node
         name="kws_control"
-        pkg="pocketsphinx"
+        pkg="faulkner"
         type="kws_test.py"
         output="screen"
         >
