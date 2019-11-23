@@ -2,6 +2,7 @@
   <arg name="model" default="burger"/>
   <param name="model" value="$(arg model)"/>
   
+  <arg name="avoidance_enabled" default="0"/>
   <arg name="x_pos" default="0.0"/>
   <arg name="y_pos" default="0.0"/>
   <arg name="z_pos" default="0.0"/>
@@ -23,6 +24,7 @@
   <arg name="joyType" default="xbox" />  <!-- possible values xbox,zerodelay-->
   <param name="joyType" value="$(arg joyType)"/>
 
+  <param name="avoidance_enabled" value="$(arg avoidance_enabled)" />
   <param name="des_pos_x" value="$(arg des_x)" />
   <param name="des_pos_y" value="$(arg des_y)" />
   <param name="max_lin_vel" value="$(arg max_lin_vel)" />

@@ -5,6 +5,7 @@ import rospy
 class parameters:
     def __init__(
         self,
+        avoidance_enabled,
         yaw_precision,
         course_correct_yaw_precision,
         dist_precision,
@@ -15,6 +16,7 @@ class parameters:
         avoidance_ang_vel_magnitude,
         avoid_distance
     ):
+        self.avoidance_enabled = avoidance_enabled
         self.yaw_precision = yaw_precision
         self.course_correct_yaw_precision = course_correct_yaw_precision
         self.dist_precision = dist_precision

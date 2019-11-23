@@ -112,6 +112,7 @@ def clbk_joy(msg):
 
 def createParametersFromLaunchFile():
     return parameters(
+        True if rospy.get_param('avoidance_enabled') > 0 else False,
         rospy.get_param('yaw_precision'),
         rospy.get_param('course_correct_yaw_precision'),
         rospy.get_param('dist_precision'),
