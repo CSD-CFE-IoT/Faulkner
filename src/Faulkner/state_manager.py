@@ -26,10 +26,11 @@ class global_state_variables:
         self.awaiting_goal = True
 
 class state_manager:
-    def __init__(self, state_vars, params, avoidance):
+    def __init__(self, state_vars, params, avoidance, history):
         self.state_vars = state_vars
         self.params = params
         self.avoidance = avoidance
+        self.history = history
 
     def ready(self):
         return self.state_vars.regions != None
@@ -55,11 +56,16 @@ class state_manager:
             return
 
         # if yaw error below tolerance threshold, straight ahead, else fix yaw
-        if math.fabs(self.state_vars.err_yaw) <= self.params.yaw_precision:
-            self.set_action_state(2) # go straight ahead
-        else:
+        if math.fabs(self.state_vars.err_yaw) > self.params.yaw_precision and not self.will_oscillate():
             self.set_action_state(1) # fix yaw
+        else:
+            self.set_action_state(2) # go straight ahead
     
+    def will_oscillate(self):
+        rospy.loginfo('Will not fix yaw to avoid oscillation')
+        last = self.history.getLastN(1)[0]
+        return last.action_state == 1 and self.state_vars.err_yaw * last.ang_z < 0
+
     def normalize_angle(self, angle):
         if(math.fabs(angle) > math.pi):
             angle = angle - (2 * math.pi * angle) / (math.fabs(angle))
