@@ -6,14 +6,13 @@ import rospy
 state_desc_ = ['Obstacle avoidance', 'Fix yaw', 'Straight ahead', 'Done']
 
 class global_state_variables:
-    def __init__(self, goal_pos):
+    def __init__(self):
         # pose and regions
         self.position = Point()
         self.yaw = 0.0
         self.regions = None
 
         #goal
-        #self.goal_pos = goal_pos
         self.goal_pos = self.position
 
         # derived state
@@ -23,6 +22,8 @@ class global_state_variables:
 
         # action state
         self.action_state = 1 # start by fixing yaw
+
+        self.awaiting_goal = True
 
 class state_manager:
     def __init__(self, state_vars, params, avoidance):
@@ -45,6 +46,7 @@ class state_manager:
         # if near goal
         if self.state_vars.err_pos <= self.params.dist_precision:
             self.set_action_state(3) # done
+            self.state_vars.awaiting_goal = True
             return
             
         # if path is obstructed

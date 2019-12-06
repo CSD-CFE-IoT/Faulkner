@@ -27,7 +27,7 @@ def clbk_odom(msg):
     
     # position
     state_variables_.position = msg.pose.pose.position
-    
+    rospy.loginfo('Odom pos: (%f, %f)', state_variables_.position.x, state_variables_.position.y)
     # yaw
     quaternion = (
         msg.pose.pose.orientation.x,
@@ -52,23 +52,63 @@ def clbk_laser(msg):
 def clbk_joy(msg):
     print(msg.header.seq)
     #output structure header, axes, buttons
-    
-    # TODO Hardcoded for now
-    step = 1000  # unit
+    joystick = rospy.get_param('joyType')
+    print(joystick)
 
-    mx = msg.axes[3] # 4th array item
-    my = msg.axes[4] # 5th array item
-    print("Joy x:"+ str(mx), " y:" + str(my))
+    # TODO Hardcoded for providing next destination point or goal point
+    # step = 1000  # unit
+    # XBox Controller
+    if joystick == 'xbox':
+        mx = msg.axes[3] # 4th array item
+        my = msg.axes[4] # 5th array item
+        print("XBox Joy x:"+ str(mx), " y:" + str(my))
 
-    if(my >= 0.8):
-        #Move 
-        print("Requested Move...")
-        state_variables_.goal_pos.x = step # state_variables_.position.x + step
+        # y-axis navigation
+        if(my >= 0.8):
+            #Move 
+            print("Requested Move...")
+            state_variables_.goal_pos.x = rospy.get_param('step_x')
+            state_variables_.awaiting_goal = False
+        elif(my <= -0.8):
+            #stop
+            print("Requested Stop!")
+            state_variables_.goal_pos = state_variables_.position
+            state_variables_.awaiting_goal = False
+        else:
+            # Do Nothing
+            print("---")
+    elif joystick == 'zerodelay':
+        # Zero delay arcade USB Encoder
+        mx = msg.axes[0]
+        my = msg.axes[1]
 
-    if(my <= -0.8):
-        #stop
-        print("Requested Stop!")
-        state_variables_.goal_pos = state_variables_.position
+        print("Zero Joy x:"+ str(mx), " y:" + str(my))
+
+        #Move forward
+        if my == 1.0:
+            if ( mx == 1.0):  #UpLeft
+                print("UpLeft")
+            elif (mx == -1.0): #UpRight
+                print("UpRight")
+            else:
+                print("Up")
+                state_variables_.goal_pos.x = rospy.get_param('step_x')
+                state_variables_.awaiting_goal = False
+        elif my == -1.0:
+            if ( mx == 1.0):  #DownLeft
+                print("DownLeft")
+            elif (mx == -1.0): #DownRight
+                print("DownRight")
+            else:
+                print("Down")
+                state_variables_.goal_pos = state_variables_.position
+                state_variables_.awaiting_goal = False
+        else:
+            #No Action (0 or -0)
+            print("No Action!")
+    else:
+        # Do Nothing
+        print ("No Compatible Joystick Found!")
 
 def createParametersFromLaunchFile():
     return parameters(
@@ -87,13 +127,8 @@ def main():
     global state_variables_, params_
     
     rospy.init_node('go_to_point')
-    
-    goal_position = Point()
-    goal_position.x = rospy.get_param('des_pos_x')
-    goal_position.y = rospy.get_param('des_pos_y')
-    goal_position.z = 0
 
-    state_variables_ = global_state_variables(goal_position)
+    state_variables_ = global_state_variables()
     params_ = createParametersFromLaunchFile()
 
     av = avoidance(state_variables_, params_)
@@ -117,6 +152,9 @@ def main():
         rate.sleep()
 
     while not rospy.is_shutdown():
+        if state_variables_.awaiting_goal:
+            continue
+
         sm.move_to_next_state()
         tw = Twist()
 

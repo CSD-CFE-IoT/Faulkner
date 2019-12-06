@@ -8,7 +8,7 @@
 
   <arg name="des_x" default="4.0"/>
   <arg name="des_y" default="0.0"/>
-  <arg name="max_lin_vel" default="0.1"/>
+  <arg name="max_lin_vel" default="0.3"/>
   <arg name="fix_yaw_ang_vel" default="0.2"/>
   <arg name="course_correct_ang_vel" default="0.05"/>
   <arg name="yaw_precision" default="0.174533"/> <!-- 10 degrees -->
@@ -17,7 +17,11 @@
   <arg name="scan_sector_size" default="0.628319"/> <!-- 36 degrees -->
   <arg name="avoidance_ang_vel_magnitude" default="0.3"/>
   <arg name="avoid_distance" default="0.5"/>
+  <arg name="step_x" default="5" />
+
   <arg name="dev" default="/dev/input/js0" />
+  <arg name="joyType" default="xbox" />  <!-- possible values xbox,zerodelay-->
+  <param name="joyType" value="$(arg joyType)"/>
 
   <param name="des_pos_x" value="$(arg des_x)" />
   <param name="des_pos_y" value="$(arg des_y)" />
@@ -30,6 +34,7 @@
   <param name="scan_sector_size" value="$(arg scan_sector_size)" />
   <param name="avoidance_ang_vel_magnitude" value="$(arg avoidance_ang_vel_magnitude)" />
   <param name="avoid_distance" value="$(arg avoid_distance)" />
+  <param name="step_x" value="$(arg step_x)" />
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find faulkner)/worlds/faulknerBox"/>
@@ -48,7 +53,7 @@
 
   <!-- Joy Node -->
   <node respawn="true" pkg="joy" type="joy_node" name="turtle_joy">
-    <param name="dev" type="string" value="/dev/input/js0" />
+    <param name="dev" type="string" value="$(arg dev)" />
     <param name="deadzone" value="0.12" />
   </node>
 
