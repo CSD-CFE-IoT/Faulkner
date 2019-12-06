@@ -50,7 +50,7 @@ class state_manager:
             return
             
         # if path is obstructed
-        if self.avoidance.is_obstructed():
+        if self.params.avoidance_enabled and self.avoidance.is_obstructed():
             self.set_action_state(0) # avoid obstacle
             return
 
