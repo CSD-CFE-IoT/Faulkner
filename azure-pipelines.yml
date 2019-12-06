@@ -20,6 +20,7 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - script: |
+    pip install rospy
     pushd test
     python -m unittest discover
     popd
