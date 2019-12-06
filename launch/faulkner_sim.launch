@@ -18,6 +18,8 @@
   <arg name="avoidance_ang_vel_magnitude" default="0.3"/>
   <arg name="avoid_distance" default="0.5"/>
   <arg name="step_x" default="5" />
+  <arg name="history_cap" default="10" />
+  <arg name="yaw_oscillation_tolerance" default="1" />
 
   <arg name="dev" default="/dev/input/js0" />
   <arg name="joyType" default="xbox" />  <!-- possible values xbox,zerodelay-->
@@ -35,6 +37,8 @@
   <param name="avoidance_ang_vel_magnitude" value="$(arg avoidance_ang_vel_magnitude)" />
   <param name="avoid_distance" value="$(arg avoid_distance)" />
   <param name="step_x" value="$(arg step_x)" />
+  <param name="history_cap" value="$(arg history_cap)" />
+  <param name="yaw_oscillation_tolerance" value="$(arg yaw_oscillation_tolerance)" />
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find faulkner)/worlds/faulknerBox"/>

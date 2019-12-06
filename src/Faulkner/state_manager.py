@@ -56,15 +56,27 @@ class state_manager:
             return
 
         # if yaw error below tolerance threshold, straight ahead, else fix yaw
-        if math.fabs(self.state_vars.err_yaw) > self.params.yaw_precision and not self.will_oscillate():
+        if math.fabs(self.state_vars.err_yaw) > self.params.yaw_precision and not self.is_oscillating():
             self.set_action_state(1) # fix yaw
         else:
             self.set_action_state(2) # go straight ahead
     
-    def will_oscillate(self):
-        rospy.loginfo('Will not fix yaw to avoid oscillation')
-        last = self.history.getLastN(1)[0]
-        return last.action_state == 1 and self.state_vars.err_yaw * last.ang_z < 0
+    def is_oscillating(self):
+        history_window = self.history.get()
+        fix_yaw_count = 0
+        last_ang_z = 1
+        num_oscillations = 0
+        for iteration in history_window[::-1]: #reverse iterator
+            if iteration.action_state == 1: # is fix yaw iteration
+                fix_yaw_count += 1
+                if fix_yaw_count > 1 and iteration.ang_z * last_ang_z < 0:
+                    num_oscillations += 1
+                last_ang_z = iteration.ang_z
+
+        is_oscillating = num_oscillations >= self.params.yaw_oscillation_tolerance
+        if is_oscillating:
+            rospy.loginfo('Will not fix yaw to avoid further oscillation')
+        return is_oscillating
 
     def normalize_angle(self, angle):
         if(math.fabs(angle) > math.pi):

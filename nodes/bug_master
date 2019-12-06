@@ -122,7 +122,9 @@ def createParametersFromLaunchFile():
         rospy.get_param('fix_yaw_ang_vel'),
         rospy.get_param('course_correct_ang_vel'),
         rospy.get_param('avoidance_ang_vel_magnitude'),
-        rospy.get_param('avoid_distance')
+        rospy.get_param('avoid_distance'),
+        rospy.get_param('history_cap'),
+        rospy.get_param('yaw_oscillation_tolerance')
     )
 
 def main():
@@ -133,7 +135,7 @@ def main():
     state_variables_ = global_state_variables()
     params_ = createParametersFromLaunchFile()
 
-    hist = history(5)
+    hist = history(params_.history_cap)
     av = avoidance(state_variables_, params_)
     yf = yaw_fixer(state_variables_, params_)
     sa = straight_ahead(state_variables_, params_)
