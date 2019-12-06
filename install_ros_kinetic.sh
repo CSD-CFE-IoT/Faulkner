@@ -3,10 +3,6 @@ name_os_version=${name_os_version:="xenial"}
 name_ros_version=${name_ros_version:="kinetic"}
 name_catkin_workspace=${name_catkin_workspace:="catkin_ws"}
 
-echo "[Update the package lists and upgrade them]"
-sudo apt-get update -y
-sudo apt-get upgrade -y
-
 echo "[Install build environment, the chrony, ntpdate and set the ntpdate]"
 sudo apt-get install -y chrony ntpdate build-essential
 sudo ntpdate ntp.ubuntu.com
