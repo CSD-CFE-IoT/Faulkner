@@ -26,6 +26,7 @@ steps:
     sudo apt-get install ros-kinetic-ros-base
     export PYTHONPATH=$PYTHONPATH:/opt/ros/kinetic/lib/python2.7/dist-packages
     export PYTHONPATH=$PYTHONPATH:/usr/lib/python2.7/dist-packages
+    export PYTHONPATH=$PYTHONPATH:$PWD/src/Faulkner
     pip install pyyaml
 
     pushd test
