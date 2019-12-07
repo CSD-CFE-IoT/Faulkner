@@ -15,6 +15,8 @@ from Faulkner import avoidance
 from Faulkner import global_state_variables
 from Faulkner import straight_ahead
 from Faulkner import yaw_fixer
+from Faulkner import history
+from Faulkner import iteration
 import math
 
 # global state variables
@@ -121,7 +123,9 @@ def createParametersFromLaunchFile():
         rospy.get_param('fix_yaw_ang_vel'),
         rospy.get_param('course_correct_ang_vel'),
         rospy.get_param('avoidance_ang_vel_magnitude'),
-        rospy.get_param('avoid_distance')
+        rospy.get_param('avoid_distance'),
+        rospy.get_param('history_cap'),
+        rospy.get_param('yaw_oscillation_tolerance')
     )
 
 def main():
@@ -132,10 +136,11 @@ def main():
     state_variables_ = global_state_variables()
     params_ = createParametersFromLaunchFile()
 
+    hist = history(params_.history_cap)
     av = avoidance(state_variables_, params_)
     yf = yaw_fixer(state_variables_, params_)
     sa = straight_ahead(state_variables_, params_)
-    sm = state_manager(state_variables_, params_, av)
+    sm = state_manager(state_variables_, params_, av, hist)
 
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
     sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
@@ -171,7 +176,8 @@ def main():
             rospy.logerr('Unknown action state!')
 
         pub.publish(tw)
-
+        it = iteration(sm.action_state(), tw.linear.x, tw.angular.z)
+        hist.append(it)
         rate.sleep()
 
 if __name__ == '__main__':

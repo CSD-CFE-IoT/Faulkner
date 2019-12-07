@@ -14,7 +14,9 @@ class parameters:
         fix_yaw_ang_vel,
         course_correct_ang_vel,
         avoidance_ang_vel_magnitude,
-        avoid_distance
+        avoid_distance,
+        history_cap,
+        yaw_oscillation_tolerance
     ):
         self.avoidance_enabled = avoidance_enabled
         self.yaw_precision = yaw_precision
@@ -26,3 +28,5 @@ class parameters:
         self.course_correct_ang_vel = course_correct_ang_vel
         self.avoidance_ang_vel_magnitude = avoidance_ang_vel_magnitude
         self.avoid_distance = avoid_distance
+        self.history_cap = history_cap
+        self.yaw_oscillation_tolerance = yaw_oscillation_tolerance
