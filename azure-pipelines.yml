@@ -6,6 +6,13 @@
 trigger:
 - master
 
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - master
+
 pool:
   vmImage: 'ubuntu-16.04'
 strategy:
@@ -16,7 +23,7 @@ strategy:
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '$(python.version)'
+    versionSpec: '$(python.version)'  
   displayName: 'Use Python $(python.version)'
 
 - script: |
