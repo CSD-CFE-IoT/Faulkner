@@ -175,7 +175,7 @@ def main():
             rospy.logerr('Unknown action state!')
 
         pub.publish(tw)
-        it = iteration(sm.action_state, tw.linear.x, tw.angular.z)
+        it = iteration(sm.action_state(), tw.linear.x, tw.angular.z)
         hist.append(it)
         rate.sleep()
 

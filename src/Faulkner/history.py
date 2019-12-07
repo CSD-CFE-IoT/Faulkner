@@ -5,6 +5,9 @@ class iteration:
         self.action_state = action_state
         self.lin_x = lin_x
         self.ang_z = ang_z
+    
+    def __str__(self):
+        return "%d[%.2f/%.2f]" % (self.action_state, self.lin_x, self.ang_z)
 
 class history:
     def __init__(self,size_max):
@@ -22,7 +25,6 @@ class history:
     def get(self):
        return self.data[self.cur:]+self.data[:self.cur]
 
-    def getLastN(self, n):
-        if n <= self.cur:
-            return self.data[self.cur-n:self.cur]
-        return self.data[len(self.data)-(n-self.cur):] + self.data[:self.cur]
+    def __str__(self):
+        return ",".join(map(str, self.get()))
+

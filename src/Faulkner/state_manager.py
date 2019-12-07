@@ -62,6 +62,7 @@ class state_manager:
             self.set_action_state(2) # go straight ahead
     
     def is_oscillating(self):
+        rospy.loginfo(self.history)
         history_window = self.history.get()
         fix_yaw_count = 0
         last_ang_z = 1
@@ -73,10 +74,13 @@ class state_manager:
                     num_oscillations += 1
                 last_ang_z = iteration.ang_z
 
-        is_oscillating = num_oscillations >= self.params.yaw_oscillation_tolerance
-        if is_oscillating:
-            rospy.loginfo('Will not fix yaw to avoid further oscillation')
-        return is_oscillating
+        oscillating = num_oscillations >= self.params.yaw_oscillation_tolerance
+        if oscillating:
+            rospy.loginfo(
+                '-------------------------------------------------------------------------------------Will not fix yaw to avoid further oscillation. Detected %d oscillations-----------------------------------------------------------------------',
+                num_oscillations
+            )
+        return oscillating
 
     def normalize_angle(self, angle):
         if(math.fabs(angle) > math.pi):
