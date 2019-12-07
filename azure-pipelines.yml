@@ -26,11 +26,28 @@ steps:
     sudo apt-get install ros-kinetic-ros-base
 
     pip install pyyaml
+    pip install pytest
+    pip install pytest-cov
 
     export PYTHONPATH=/usr/lib/python2.7/dist-packages
     export PYTHONPATH=$PYTHONPATH:/opt/ros/kinetic/lib/python2.7/dist-packages
     export PYTHONPATH=$PYTHONPATH:$PWD/src
 
-    chmod 755 ./ExecuteUnitTests.sh && bash ./ExecuteUnitTests.sh
+  displayName: 'Setup ROS and Python env'
 
-  displayName: 'Execute Unit Tests'
+- script: |
+    pushd test
+    pytest tests.py --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+  displayName: 'Run Unit Tests'
+
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFiles: '**/test-*.xml'
+    testRunTitle: 'Publish test results for Python $(python.version)'
+
+- script: |
+    popd
+  displayName: 'Cleanup'
+
+
