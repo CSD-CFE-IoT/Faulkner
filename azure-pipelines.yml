@@ -25,6 +25,7 @@ steps:
   displayName: 'Setup ROS and Python env'
 
 - script: |
+    pushd test
     chmod 755 ./RunUnitTests.sh && bash ./RunUnitTests.sh
   displayName: 'Run Unit Tests'
 
