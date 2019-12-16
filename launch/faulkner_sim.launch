@@ -7,7 +7,7 @@
   <arg name="y_pos" default="0.0"/>
   <arg name="z_pos" default="0.0"/>
 
-  <arg name="des_x" default="4.0"/>
+  <arg name="des_x" default="0.0"/>
   <arg name="des_y" default="0.0"/>
   <arg name="max_lin_vel" default="0.3"/>
   <arg name="fix_yaw_ang_vel" default="0.2"/>
@@ -27,8 +27,8 @@
   <param name="joyType" value="$(arg joyType)"/>
 
   <param name="avoidance_enabled" value="$(arg avoidance_enabled)" />
-  <param name="des_pos_x" value="$(arg des_x)" />
-  <param name="des_pos_y" value="$(arg des_y)" />
+  <param name="des_x" value="$(arg des_x)" />
+  <param name="des_y" value="$(arg des_y)" />
   <param name="max_lin_vel" value="$(arg max_lin_vel)" />
   <param name="fix_yaw_ang_vel" value="$(arg fix_yaw_ang_vel)" />
   <param name="course_correct_ang_vel" value="$(arg course_correct_ang_vel)" />

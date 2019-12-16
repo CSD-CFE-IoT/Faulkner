@@ -128,6 +128,15 @@ def createParametersFromLaunchFile():
         rospy.get_param('yaw_oscillation_tolerance')
     )
 
+def try_set_initial_goal():
+    global state_variables_
+    x = rospy.get_param('des_x')
+    y = rospy.get_param('des_y')
+    if x != 0 or y != 0:
+        state_variables_.goal_pos = Point(x=x, y=y)
+        state_variables_.awaiting_goal = False
+    
+
 def main():
     global state_variables_, params_
     
@@ -135,6 +144,8 @@ def main():
 
     state_variables_ = global_state_variables()
     params_ = createParametersFromLaunchFile()
+
+    try_set_initial_goal()
 
     hist = history(params_.history_cap)
     av = avoidance(state_variables_, params_)
