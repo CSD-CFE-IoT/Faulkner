@@ -2,13 +2,14 @@
   <arg name="model" default="burger"/>
   <param name="model" value="$(arg model)"/>
   
+  <arg name="avoidance_enabled" default="0"/>
   <arg name="x_pos" default="0.0"/>
   <arg name="y_pos" default="0.0"/>
   <arg name="z_pos" default="0.0"/>
 
   <arg name="des_x" default="4.0"/>
   <arg name="des_y" default="0.0"/>
-  <arg name="max_lin_vel" default="0.1"/>
+  <arg name="max_lin_vel" default="0.3"/>
   <arg name="fix_yaw_ang_vel" default="0.2"/>
   <arg name="course_correct_ang_vel" default="0.05"/>
   <arg name="yaw_precision" default="0.174533"/> <!-- 10 degrees -->
@@ -18,11 +19,14 @@
   <arg name="avoidance_ang_vel_magnitude" default="0.3"/>
   <arg name="avoid_distance" default="0.5"/>
   <arg name="step_x" default="5" />
+  <arg name="history_cap" default="5" />
+  <arg name="yaw_oscillation_tolerance" default="1" />
 
   <arg name="dev" default="/dev/input/js0" />
-  <arg name="joyType" default="zerodelay" />  <!-- possible values xbox,zerodelay-->
+  <arg name="joyType" default="xbox" />  <!-- possible values xbox,zerodelay-->
   <param name="joyType" value="$(arg joyType)"/>
 
+  <param name="avoidance_enabled" value="$(arg avoidance_enabled)" />
   <param name="des_pos_x" value="$(arg des_x)" />
   <param name="des_pos_y" value="$(arg des_y)" />
   <param name="max_lin_vel" value="$(arg max_lin_vel)" />
@@ -34,10 +38,12 @@
   <param name="scan_sector_size" value="$(arg scan_sector_size)" />
   <param name="avoidance_ang_vel_magnitude" value="$(arg avoidance_ang_vel_magnitude)" />
   <param name="avoid_distance" value="$(arg avoid_distance)" />
+  <param name="step_x" value="$(arg step_x)" />
+  <param name="history_cap" value="$(arg history_cap)" />
+  <param name="yaw_oscillation_tolerance" value="$(arg yaw_oscillation_tolerance)" />
 
-  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
 
-  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch"/> 
+  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch"/> 
 
   <!-- Joy Node -->
   <node respawn="true" pkg="joy" type="joy_node" name="turtle_joy">
