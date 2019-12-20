@@ -42,13 +42,20 @@ def clbk_odom(msg):
 def clbk_laser(msg):
     global state_variables_, params_
     s = int(round(params_.scan_sector_size/msg.angle_increment))
+    infinity = 100.0
+    ranges = list(msg.ranges)
+    for i in range(len(ranges)):
+        if ranges[i] == 0.0:
+            ranges[i] = infinity
+
+    # rospy.loginfo(ranges)
     state_variables_.regions = {
         # FAULKNERFIX: make these hardcoded numbers configurable
-        'right':  min(min(msg.ranges[(15*s)/2:(17*s)/2]), 10),
-        'fright':   min(min(msg.ranges[(17*s)/2:(19*s)/2]), 10),
-        'front':  min(min(msg.ranges[0:s/2]+msg.ranges[(19*s)/2:]), 10),
-        'fleft': min(min(msg.ranges[s/2:(3*s)/2]), 10),
-        'left':  min(min(msg.ranges[(3*s)/2:(5*s)/2]), 10),
+        'right':  min(min(ranges[(15*s)/2:(17*s)/2]), infinity),
+        'fright':   min(min(ranges[(17*s)/2:(19*s)/2]), infinity),
+        'front':  min(min(ranges[0:s/2]+ranges[(19*s)/2:]), infinity),
+        'fleft': min(min(ranges[s/2:(3*s)/2]), infinity),
+        'left':  min(min(ranges[(3*s)/2:(5*s)/2]), infinity),
     }
 
 def clbk_joy(msg):
@@ -69,7 +76,7 @@ def clbk_joy(msg):
         if(my >= 0.8):
             #Move 
             print("Requested Move...")
-            state_variables_.goal_pos.x = rospy.get_param('step_x')
+            state_variables_.goal_pos.x += rospy.get_param('step_x')
             state_variables_.awaiting_goal = False
         elif(my <= -0.8):
             #stop
