@@ -63,7 +63,7 @@ class state_manager:
     
     def is_oscillating(self):
         rospy.loginfo(self.history)
-        history_window = self.history.getLastN(self.params.yaw_oscillation_window)
+        history_window = self.history.getLastNItems(self.params.yaw_oscillation_window)
         fix_yaw_count = 0
         last_ang_z = 1
         num_oscillations = 0

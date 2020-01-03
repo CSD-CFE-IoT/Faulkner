@@ -21,7 +21,7 @@ class avoidance:
     
     def is_obstructed(self, regions):
         self.regions = regions
-        history_window = self.history.getLastN(self.params.is_obstructed_window)
+        history_window = self.history.getLastNItems(self.params.is_obstructed_window)
         obs = False
         for it in history_window:
             if self.obstacle_near_centre(it.regions):

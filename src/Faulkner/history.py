@@ -26,7 +26,7 @@ class history:
     def get(self):
        return self.data[self.cur:]+self.data[:self.cur]
 
-    def getLastN(self, n):
+    def getLastNItems(self, n):
         if n <= self.cur:
             return self.data[self.cur-n:self.cur]
         return self.data[len(self.data)-(n-self.cur):] + self.data[:self.cur]
