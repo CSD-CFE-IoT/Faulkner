@@ -16,7 +16,9 @@ class parameters:
         avoidance_ang_vel_magnitude,
         avoid_distance,
         history_cap,
-        yaw_oscillation_tolerance
+        yaw_oscillation_tolerance,
+        yaw_oscillation_window,
+        is_obstructed_window
     ):
         self.avoidance_enabled = avoidance_enabled
         self.yaw_precision = yaw_precision
@@ -30,3 +32,5 @@ class parameters:
         self.avoid_distance = avoid_distance
         self.history_cap = history_cap
         self.yaw_oscillation_tolerance = yaw_oscillation_tolerance
+        self.yaw_oscillation_window = yaw_oscillation_window
+        self.is_obstructed_window = is_obstructed_window

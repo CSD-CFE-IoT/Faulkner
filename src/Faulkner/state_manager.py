@@ -35,7 +35,7 @@ class state_manager:
     def ready(self):
         return self.state_vars.regions != None
 
-    def move_to_next_state(self):
+    def move_to_next_state(self, regions):
 
         goal = self.state_vars.goal_pos
         pos = self.state_vars.position
@@ -51,7 +51,7 @@ class state_manager:
             return
             
         # if path is obstructed
-        if self.params.avoidance_enabled and self.avoidance.is_obstructed():
+        if self.params.avoidance_enabled and self.avoidance.is_obstructed(regions):
             self.set_action_state(0) # avoid obstacle
             return
 
@@ -63,7 +63,7 @@ class state_manager:
     
     def is_oscillating(self):
         rospy.loginfo(self.history)
-        history_window = self.history.get()
+        history_window = self.history.getLastNItems(self.params.yaw_oscillation_window)
         fix_yaw_count = 0
         last_ang_z = 1
         num_oscillations = 0

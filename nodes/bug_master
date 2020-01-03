@@ -132,8 +132,19 @@ def createParametersFromLaunchFile():
         rospy.get_param('avoidance_ang_vel_magnitude'),
         rospy.get_param('avoid_distance'),
         rospy.get_param('history_cap'),
-        rospy.get_param('yaw_oscillation_tolerance')
+        rospy.get_param('yaw_oscillation_tolerance'),
+        rospy.get_param('yaw_oscillation_window'),
+        rospy.get_param('is_obstructed_window')
     )
+
+def try_set_initial_goal():
+    global state_variables_
+    x = rospy.get_param('des_x')
+    y = rospy.get_param('des_y')
+    if x != 0 or y != 0:
+        state_variables_.goal_pos = Point(x=x, y=y)
+        state_variables_.awaiting_goal = False
+    
 
 def main():
     global state_variables_, params_
@@ -143,8 +154,10 @@ def main():
     state_variables_ = global_state_variables()
     params_ = createParametersFromLaunchFile()
 
+    try_set_initial_goal()
+
     hist = history(params_.history_cap)
-    av = avoidance(state_variables_, params_)
+    av = avoidance(state_variables_, params_, hist)
     yf = yaw_fixer(state_variables_, params_)
     sa = straight_ahead(state_variables_, params_)
     sm = state_manager(state_variables_, params_, av, hist)
@@ -168,9 +181,9 @@ def main():
         if state_variables_.awaiting_goal:
             continue
 
-        sm.move_to_next_state()
         tw = Twist()
-
+        regions = state_variables_.regions
+        sm.move_to_next_state(regions)
         if sm.action_state() == 0:
             tw = av.avoid()
         elif sm.action_state() == 1:
@@ -183,7 +196,7 @@ def main():
             rospy.logerr('Unknown action state!')
 
         pub.publish(tw)
-        it = iteration(sm.action_state(), tw.linear.x, tw.angular.z)
+        it = iteration(sm.action_state(), tw.linear.x, tw.angular.z, regions)
         hist.append(it)
         rate.sleep()
 

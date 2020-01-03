@@ -7,7 +7,7 @@
   <arg name="y_pos" default="0.0"/>
   <arg name="z_pos" default="0.0"/>
 
-  <arg name="des_x" default="4.0"/>
+  <arg name="des_x" default="0.0"/>
   <arg name="des_y" default="0.0"/>
   <arg name="max_lin_vel" default="0.3"/>
   <arg name="fix_yaw_ang_vel" default="0.2"/>
@@ -19,16 +19,18 @@
   <arg name="avoidance_ang_vel_magnitude" default="0.3"/>
   <arg name="avoid_distance" default="0.5"/>
   <arg name="step_x" default="5" />
-  <arg name="history_cap" default="5" />
+  <arg name="history_cap" default="10" />
   <arg name="yaw_oscillation_tolerance" default="1" />
+  <arg name="yaw_oscillation_window" default="5" />
+  <arg name="is_obstructed_window" default="7" />
 
   <arg name="dev" default="/dev/input/js0" />
   <arg name="joyType" default="xbox" />  <!-- possible values xbox,zerodelay-->
   <param name="joyType" value="$(arg joyType)"/>
 
   <param name="avoidance_enabled" value="$(arg avoidance_enabled)" />
-  <param name="des_pos_x" value="$(arg des_x)" />
-  <param name="des_pos_y" value="$(arg des_y)" />
+  <param name="des_x" value="$(arg des_x)" />
+  <param name="des_y" value="$(arg des_y)" />
   <param name="max_lin_vel" value="$(arg max_lin_vel)" />
   <param name="fix_yaw_ang_vel" value="$(arg fix_yaw_ang_vel)" />
   <param name="course_correct_ang_vel" value="$(arg course_correct_ang_vel)" />
@@ -41,6 +43,8 @@
   <param name="step_x" value="$(arg step_x)" />
   <param name="history_cap" value="$(arg history_cap)" />
   <param name="yaw_oscillation_tolerance" value="$(arg yaw_oscillation_tolerance)" />
+  <param name="yaw_oscillation_window" value="$(arg yaw_oscillation_window)" />
+  <param name="is_obstructed_window" value="$(arg is_obstructed_window)" />
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find faulkner)/worlds/faulknerBox"/>
