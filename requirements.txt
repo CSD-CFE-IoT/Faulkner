@@ -3,7 +3,7 @@ adium-theme-ubuntu==0.3.4
 altgraph==0.16.1
 angles==1.9.11
 attrs==15.2.0
-autobahn==0.10.3
+autobahn==20.12.3
 base-local-planner==1.14.4
 bhand-controller==0.1.2
 bondpy==1.8.3
